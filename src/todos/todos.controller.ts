@@ -17,17 +17,21 @@ import {
 
 @Controller('todos')
 export class TodosController {
+  private logger = new Logger('TodosController');
+
   constructor(private readonly todosService: TodosService) {
   }
 
   @Get()
   getAll(@Req() request): Todo[] {
-    return this.todosService.getAll(request.user.sub);
+    const todos = this.todosService.getAll(request.user.sub);
+    this.logger.debug(`${todos.length} todos returned`);
+    return todos;
   }
 
   @Get(':id')
   get(@Param('id') id: string, @Req() request): Todo {
-    const todo = this.todosService.get(request.user.sub, +id);
+    const todo = this.todosService.get(+id, request.user.sub);
     if (!todo) {
       throw new NotFoundException();
     }
@@ -37,7 +41,7 @@ export class TodosController {
 
   @Post()
   add(@Body() todo: Todo, @Req() request): Todo {
-    this.todosService.add(request.user.sub, todo);
+    this.todosService.add(todo, request.user.sub);
     return todo;
   }
 
@@ -45,12 +49,12 @@ export class TodosController {
   @HttpCode(HttpStatus.NO_CONTENT)
   update(@Param('id') id: string, @Body() todo: Todo, @Req() request): void {
     todo.id = +id;
-    this.todosService.update(request.user.sub, todo);
+    this.todosService.update(todo, request.user.sub);
   }
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   delete(@Param('id') id: string, @Req() request): void {
-    this.todosService.delete(request.user.sub, +id);
+    this.todosService.delete(+id, request.user.sub);
   }
 }

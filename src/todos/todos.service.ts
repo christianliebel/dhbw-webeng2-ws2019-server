@@ -3,8 +3,15 @@ import { Todo } from 'src/todo';
 
 @Injectable()
 export class TodosService {
-    private readonly todos = new Map<number, Todo>();
+    private readonly userTodos = new Map<string, Map<number, Todo>>();
     private nextId = 1;
+
+    private getUserTodos(client: string): Map<number, Todo> {
+        if (!this.userTodos.has(client)) {
+            this.userTodos.set(client, new Map<number, Todo>());
+        }
+        return this.userTodos.get(client);
+    }
 
     public add(todo: Todo, client: string) {
         todo.id = this.nextId++;
@@ -12,18 +19,18 @@ export class TodosService {
     }
 
     public update(todo: Todo, client: string) {
-        this.todos.set(todo.id, todo);
+        this.getUserTodos(client).set(todo.id, todo);
     }
 
     public delete(id: number, client: string): void {
-        this.todos.delete(id);
+        this.getUserTodos(client).delete(id);
     }
 
     public get(id: number, client: string): Todo {
-        return this.todos.get(id);
+        return this.getUserTodos(client).get(id);
     }
 
     public getAll(client: string): Todo[] {
-        return Array.from(this.todos.values());
+        return Array.from(this.getUserTodos(client).values());
     }
 }
